@@ -1278,6 +1278,7 @@ let textEditMode = false;
 let currentEditingElement = null;
 let contextMenuOverlay = null;
 let rightSidebarOverlay = null; // New variable for right sidebar
+let classTooltip = null; // Add this after contextMenuOverlay declaration
 
 // Change tracking system with improved selector generation
 let changesTracker = {
@@ -3092,6 +3093,7 @@ function disableDesignMode() {
 
   removeAllHighlights();
   selectedElement = null;
+  if (classTooltip) classTooltip.style.display = 'none';
 }
 
 // Handle global clicks to hide context menu
@@ -3170,11 +3172,13 @@ function handleMouseOver(event) {
     !isDesignMode ||
     event.target.closest('#visual-editor-overlay') ||
     event.target.closest('#ve-context-menu') ||
-    event.target.closest('#ve-right-sidebar') // Prevent hover on right sidebar
+    event.target.closest('#ve-right-sidebar')
   )
     return;
 
   const element = event.target;
+
+  // Clear previous hover states
   document.querySelectorAll('.ve-hovering').forEach((el) => {
     if (el !== selectedElement && el !== currentEditingElement) {
       el.classList.remove('ve-hovering');
@@ -3183,6 +3187,34 @@ function handleMouseOver(event) {
 
   if (element !== selectedElement && element !== currentEditingElement) {
     element.classList.add('ve-hovering');
+
+    // Show class tooltip
+    createClassTooltip();
+    if (classTooltip) {
+      const classes = element.className
+        .split(' ')
+        .filter((c) => c && !c.startsWith('ve-')) // Filter out your editor's own classes
+        .join(' ');
+
+      if (classes) {
+        classTooltip.textContent = classes;
+        classTooltip.style.display = 'block';
+
+        // Position tooltip above the element
+        const rect = element.getBoundingClientRect();
+        const tooltipHeight = 28; // Approximate height
+
+        classTooltip.style.left = rect.left + 'px';
+        classTooltip.style.top = rect.top - tooltipHeight - 5 + 'px';
+
+        // Adjust if tooltip goes off screen
+        if (rect.top - tooltipHeight - 5 < 0) {
+          classTooltip.style.top = rect.bottom + 5 + 'px';
+        }
+      } else {
+        classTooltip.style.display = 'none';
+      }
+    }
   }
 }
 
@@ -3192,13 +3224,18 @@ function handleMouseOut(event) {
     !isDesignMode ||
     event.target.closest('#visual-editor-overlay') ||
     event.target.closest('#ve-context-menu') ||
-    event.target.closest('#ve-right-sidebar') // Prevent hover on right sidebar
+    event.target.closest('#ve-right-sidebar')
   )
     return;
 
   const element = event.target;
   if (element !== selectedElement && element !== currentEditingElement) {
     element.classList.remove('ve-hovering');
+
+    // Hide class tooltip
+    if (classTooltip) {
+      classTooltip.style.display = 'none';
+    }
   }
 }
 
@@ -3217,6 +3254,7 @@ function handleClick(event) {
     return;
 
   event.preventDefault();
+  if (classTooltip) classTooltip.style.display = 'none';
   event.stopPropagation();
   event.stopImmediatePropagation();
 
@@ -3303,6 +3341,31 @@ function handleUndoRedoKeyboard(event) {
   ) {
     event.preventDefault();
     changesTracker.redo();
+  }
+}
+
+// Hovering Class Toolbar creating Function
+function createClassTooltip() {
+  if (!classTooltip) {
+    classTooltip = document.createElement('div');
+    classTooltip.id = 've-class-tooltip';
+    classTooltip.style.cssText = `
+      position: fixed;
+      background: #1f2937;
+      color: #f3f4f6;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      border-radius: 4px;
+      z-index: 100001;
+      pointer-events: none;
+      display: none;
+      white-space: nowrap;
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    `;
+    document.body.appendChild(classTooltip);
   }
 }
 
