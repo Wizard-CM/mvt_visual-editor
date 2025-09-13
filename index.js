@@ -882,79 +882,120 @@ button:focus-visible {
 .ve-tool-btn {
   transition: opacity 0.2s ease;
 }
+.ve-breadcrumb-path {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: auto;
+    white-space: nowrap;
+}
 
+.ve-breadcrumb-item {
+    color: #6b7280;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.ve-breadcrumb-item:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.ve-breadcrumb-item.active {
+    background: #3b82f6;
+    color: white;
+}
+
+.ve-breadcrumb-separator {
+    color: #9ca3af;
+    user-select: none;
+}
     </style>
 
     <!-- HTML Structure with Design/Navigate Mode Buttons -->
-<div id="visual-editor-overlay">
-    <div class="ve-editor-panel">
-        <div class="ve-toolbar">
-            <div class="ve-left-controls">
-                <!-- NEW: Vertical Mode Toggle Buttons -->
-<div class="ve-mode-toggle">
-    <button id="ve-design-mode" class="ve-mode-btn">
-        <span class="ve-icon"></span>
-        Design Mode
-    </button>
-    <button id="ve-navigate-mode" class="ve-mode-btn active">
-        <span class="ve-icon"></span>
-        Navigate Mode
-    </button>
-</div>
+    <div id="visual-editor-overlay">
+        <div class="ve-editor-panel">
+            <!-- NEW: Breadcrumb Path Navigation -->
+            <div class="ve-breadcrumb-path" id="ve-breadcrumb-path" style="display: none;">
+                <!-- Path items will be dynamically inserted here -->
             </div>
-            
-            <div class="ve-center-status">
-                <!-- NEW: Screen Size Toggle Buttons -->
-                <div class="ve-screen-size-toggle">
-                    <button id="ve-desktop-view" class="ve-screen-btn active" title="Desktop View">
-                        <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
-                            <rect x="1" y="1" width="18" height="12" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                            <rect x="3" y="3" width="14" height="8" fill="currentColor" opacity="0.3"/>
-                            <path d="M7 15H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                    <button id="ve-tablet-view" class="ve-screen-btn" title="Tablet View">
-                        <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
-                            <rect x="1" y="1" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                            <rect x="3" y="3" width="10" height="14" fill="currentColor" opacity="0.3"/>
-                            <circle cx="8" cy="17.5" r="0.5" fill="currentColor"/>
-                        </svg>
-                    </button>
-                    <button id="ve-mobile-view" class="ve-screen-btn" title="Mobile View">
-                        <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
-                            <rect x="1" y="1" width="10" height="18" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                            <rect x="2.5" y="3" width="7" height="13" fill="currentColor" opacity="0.3"/>
-                            <circle cx="6" cy="17.5" r="0.5" fill="currentColor"/>
-                        </svg>
-                    </button>
+            <div class="ve-toolbar">
+                <div class="ve-left-controls">
+                    <!-- Vertical Mode Toggle Buttons -->
+                    <div class="ve-mode-toggle">
+                        <button id="ve-design-mode" class="ve-mode-btn">
+                            <span class="ve-icon"></span>
+                            Design Mode
+                        </button>
+                        <button id="ve-navigate-mode" class="ve-mode-btn active">
+                            <span class="ve-icon"></span>
+                            Navigate Mode
+                        </button>
+                    </div>
                 </div>
-                <p id="ve-status">Navigate Mode - Normal browsing enabled</p>
-            </div>
-            
-            <div class="ve-right-controls">
-                <button class="ve-tool-btn" title="Undo">
-                    <span class="ve-icon">↶</span>
-                </button>
-                
-                <button class="ve-tool-btn" title="Redo">
-                    <span class="ve-icon">↷</span>
-                </button>
-                
-                <div class="ve-divider"></div>
-                
-                <button class="ve-tool-btn" title="Settings">
-                    <span class="ve-icon">⚙️</span>
-                </button>
-                
-                <button id="ve-save-changes" class="ve-save-btn">
-                    SAVE AND CONTINUE
-                </button>
-                
-                <button class="ve-close-btn" id="ve-close" title="Close Editor">×</button>
+
+                <div class="ve-center-status">
+                    <!-- Screen Size Toggle Buttons -->
+                    <div class="ve-screen-size-toggle">
+                        <button id="ve-desktop-view" class="ve-screen-btn active" title="Desktop View">
+                            <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+                                <rect x="1" y="1" width="18" height="12" rx="1" stroke="currentColor" stroke-width="1.5"
+                                    fill="none" />
+                                <rect x="3" y="3" width="14" height="8" fill="currentColor" opacity="0.3" />
+                                <path d="M7 15H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                            </svg>
+                        </button>
+                        <button id="ve-tablet-view" class="ve-screen-btn" title="Tablet View">
+                            <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+                                <rect x="1" y="1" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.5"
+                                    fill="none" />
+                                <rect x="3" y="3" width="10" height="14" fill="currentColor" opacity="0.3" />
+                                <circle cx="8" cy="17.5" r="0.5" fill="currentColor" />
+                            </svg>
+                        </button>
+                        <button id="ve-mobile-view" class="ve-screen-btn" title="Mobile View">
+                            <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
+                                <rect x="1" y="1" width="10" height="18" rx="2" stroke="currentColor" stroke-width="1.5"
+                                    fill="none" />
+                                <rect x="2.5" y="3" width="7" height="13" fill="currentColor" opacity="0.3" />
+                                <circle cx="6" cy="17.5" r="0.5" fill="currentColor" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p id="ve-status">Navigate Mode - Normal browsing enabled</p>
+                </div>
+
+                <div class="ve-right-controls">
+                    <button class="ve-tool-btn" title="Undo">
+                        <span class="ve-icon">↶</span>
+                    </button>
+
+                    <button class="ve-tool-btn" title="Redo">
+                        <span class="ve-icon">↷</span>
+                    </button>
+
+                    <div class="ve-divider"></div>
+
+                    <button class="ve-tool-btn" title="Settings">
+                        <span class="ve-icon">⚙️</span>
+                    </button>
+
+                    <button id="ve-save-changes" class="ve-save-btn">
+                        SAVE AND CONTINUE
+                    </button>
+
+                    <button class="ve-close-btn" id="ve-close" title="Close Editor">×</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
             `;
 
 

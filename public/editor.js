@@ -1570,6 +1570,125 @@ let changesTracker = {
   },
 };
 
+// Generate breadcrumb path for selected element
+function generateBreadcrumbPath(element) {
+  if (!element) return [];
+
+  let path = [];
+  let current = element;
+
+  while (
+    current &&
+    current !== document.body &&
+    current.nodeType === Node.ELEMENT_NODE
+  ) {
+    let identifier = current.tagName.toLowerCase();
+
+    // Add ID if exists
+    if (current.id) {
+      identifier += '#' + current.id;
+    }
+
+    // Add first class if exists (you can modify to show all classes)
+    if (current.className && typeof current.className === 'string') {
+      const classes = current.className
+        .split(' ')
+        .filter((c) => c && !c.startsWith('ve-')); // Filter out editor classes
+      if (classes.length > 0) {
+        identifier += '.' + classes[0];
+      }
+    }
+
+    path.unshift({
+      element: current,
+      label: identifier,
+    });
+
+    current = current.parentElement;
+  }
+
+  // Add body at the beginning
+  path.unshift({
+    element: document.body,
+    label: 'body',
+  });
+
+  return path;
+}
+
+// Display breadcrumb path in UI
+function displayBreadcrumbPath(path) {
+  const breadcrumbContainer = document.getElementById('ve-breadcrumb-path');
+  if (!breadcrumbContainer) return;
+
+  // Clear existing breadcrumbs
+  breadcrumbContainer.innerHTML = '';
+
+  // Show the container
+  breadcrumbContainer.style.display = 'flex';
+
+  path.forEach((item, index) => {
+    // Create breadcrumb item
+    const breadcrumbItem = document.createElement('span');
+    breadcrumbItem.className = 've-breadcrumb-item';
+    breadcrumbItem.textContent = item.label;
+
+    // Mark the last item as active
+    if (index === path.length - 1) {
+      breadcrumbItem.classList.add('active');
+    }
+
+    // Add click handler to select that element
+    breadcrumbItem.addEventListener('click', function (e) {
+      e.stopPropagation();
+      selectElementFromBreadcrumb(item.element);
+    });
+
+    breadcrumbContainer.appendChild(breadcrumbItem);
+
+    // Add separator (except for last item)
+    if (index < path.length - 1) {
+      const separator = document.createElement('span');
+      separator.className = 've-breadcrumb-separator';
+      separator.textContent = '>';
+      breadcrumbContainer.appendChild(separator);
+    }
+  });
+}
+
+// Handle clicking on breadcrumb item
+function selectElementFromBreadcrumb(element) {
+  if (!element || !isDesignMode) return;
+
+  // Remove previous selection
+  removeAllHighlights();
+
+  // Select the new element
+  selectedElement = element;
+  selectedElement.classList.add('ve-selected');
+
+  // Update breadcrumb
+  const path = generateBreadcrumbPath(selectedElement);
+  displayBreadcrumbPath(path);
+
+  // Update status
+  const statusText = document.getElementById('ve-status');
+  if (statusText) {
+    const elementInfo =
+      selectedElement.tagName.toLowerCase() +
+      (selectedElement.id ? '#' + selectedElement.id : '');
+    statusText.textContent = '✓ Selected: ' + elementInfo;
+  }
+}
+
+// Hide breadcrumb path
+function hideBreadcrumbPath() {
+  const breadcrumbContainer = document.getElementById('ve-breadcrumb-path');
+  if (breadcrumbContainer) {
+    breadcrumbContainer.style.display = 'none';
+  }
+}
+
 //-------------------------------------RIGHT SIDEBAR RELATED FUNCTIONALITIES-----------------------------------------------------//
 
 // Function That Creates and inject right sidebar overlay
@@ -3092,6 +3211,7 @@ function disableDesignMode() {
   document.removeEventListener('keydown', handleUndoRedoKeyboard, true);
 
   removeAllHighlights();
+  hideBreadcrumbPath(); // Add this line
   selectedElement = null;
   if (classTooltip) classTooltip.style.display = 'none';
 }
@@ -3281,6 +3401,10 @@ function handleClick(event) {
     // Show context menu for the selected element
     showContextMenu(selectedElement, event);
 
+    // Generate and display breadcrumb path
+    const path = generateBreadcrumbPath(selectedElement);
+    displayBreadcrumbPath(path);
+
     const statusText = document.getElementById('ve-status');
     if (statusText) {
       const elementInfo =
@@ -3324,6 +3448,8 @@ function removeAllHighlights() {
   document.querySelectorAll('.ve-hovering, .ve-selected').forEach((el) => {
     el.classList.remove('ve-hovering', 've-selected');
   });
+
+   hideBreadcrumbPath(); // Add this line
 }
 
 // UNDO AND REDO RELATED FUNCTION
