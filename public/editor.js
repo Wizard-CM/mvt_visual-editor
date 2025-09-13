@@ -1311,6 +1311,7 @@ let changesTracker = {
     }
 
     console.log('Change tracked:', changeData);
+    this.saveStateForUndo(element, propertyType, oldValue, newValue);
   },
 
   // Generate a simplified path selector (main selector now)
@@ -1467,17 +1468,29 @@ let changesTracker = {
     // Add back to undo stack
     this.undoStack.push(changeToRedo);
 
-    // Add back to changes array
-    this.trackChange(
-      changeToRedo.element,
-      changeToRedo.property,
-      changeToRedo.oldValue,
-      changeToRedo.newValue,
+    // Add back to changes array - but WITHOUT calling saveStateForUndo
+    const selector = this.generatePathSelector(changeToRedo.element);
+    const existingChangeIndex = this.changes.findIndex(
+      (change) =>
+        change.selector === selector &&
+        change.property === changeToRedo.property,
     );
+
+    if (existingChangeIndex !== -1) {
+      this.changes[existingChangeIndex].newValue = changeToRedo.newValue;
+    } else {
+      this.changes.push({
+        selector: selector,
+        property: changeToRedo.property,
+        originalValue: changeToRedo.oldValue,
+        newValue: changeToRedo.newValue,
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     this.updateUndoRedoButtons();
     this.updateStatusText(`Redone: ${changeToRedo.property} change`);
-    this.saveStateForUndo(element, propertyType, oldValue, newValue);
+    // REMOVE the incorrect saveStateForUndo line that was here
   },
 
   // Apply a change to an element

@@ -872,9 +872,15 @@ button:focus-visible {
     outline-offset: 2px;
     border-radius: 4px;
 }
-    .ve-tool-btn:disabled {
+
+.ve-tool-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  pointer-events: none;
+}
+
+.ve-tool-btn {
+  transition: opacity 0.2s ease;
 }
 
     </style>
